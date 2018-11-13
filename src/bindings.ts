@@ -8,6 +8,8 @@ import {
   Store
 } from 'vuex'
 
+export * from 'vue-class-component'
+
 export type VuexDecorator = <V extends Vue> (proto: V, key: string) => void
 
 export type StateTransformer = (state: any, getters: any) => any
@@ -35,6 +37,7 @@ export interface BindingHelpers {
   Action: BindingHelper,
   GetterSetter: BindingHelper
 }
+
 
 export const State = createBindingHelper('computed', mapState) as StateBindingHelper
 
