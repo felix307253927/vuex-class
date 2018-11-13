@@ -9,12 +9,10 @@
     "bindings"
   ],
   "license": "MIT",
-  "main": "dist/vuex-class.cjs.js",
-  "module": "lib/index.js",
-  "typings": "lib/index.d.ts",
+  "main": "src/index.ts",
+  "module": "src/index.ts",
   "files": [
-    "dist",
-    "lib"
+    "src"
   ],
   "homepage": "https://github.com/ktsn/vuex-class",
   "bugs": "https://github.com/ktsn/vuex-class/issues",

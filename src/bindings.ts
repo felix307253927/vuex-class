@@ -8,7 +8,7 @@ import {
   Store
 } from 'vuex'
 
-export * from 'vue-class-component'
+export * as Component from 'vue-class-component'
 
 export type VuexDecorator = <V extends Vue> (proto: V, key: string) => void
 

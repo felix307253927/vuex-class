@@ -1,7 +1,9 @@
 export {
   State,
   Getter,
+  GetterSetter,
   Action,
   Mutation,
-  namespace
+  namespace,
+  Com
 } from './bindings'
