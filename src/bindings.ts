@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import { createDecorator } from 'vue-class-component'
+import VComponent, { createDecorator } from 'vue-class-component'
 import {
   mapState,
   mapGetters,
@@ -8,7 +8,7 @@ import {
   Store
 } from 'vuex'
 
-export * as Component from 'vue-class-component'
+export const Component: VComponent = VComponent
 
 export type VuexDecorator = <V extends Vue> (proto: V, key: string) => void
 

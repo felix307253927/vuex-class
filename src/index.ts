@@ -5,5 +5,5 @@ export {
   Action,
   Mutation,
   namespace,
-  Com
+  Component
 } from './bindings'
