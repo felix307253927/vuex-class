@@ -5,7 +5,11 @@ import {
   mapGetters,
   mapActions,
   mapMutations,
-  Store
+  Store,
+  Mapper,
+  Computed,
+  MapperWithNamespace,
+  Dictionary
 } from 'vuex'
 
 export const Component = VComponent
@@ -15,7 +19,7 @@ export type VuexDecorator = <V extends Vue> (proto: V, key: string) => void
 export type StateTransformer = (state: any, getters: any) => any
 
 export type MapHelper = typeof mapState | typeof mapGetters
-  | typeof mapActions | typeof mapMutations
+  | typeof mapActions | typeof mapMutations | any
 
 export interface BindingOptions {
   namespace?: string
@@ -47,6 +51,7 @@ export const Action = createBindingHelper('methods', mapActions)
 
 export const Mutation = createBindingHelper('methods', mapMutations)
 
+
 function normalizeMap(map: Array<string> | Object) {
   return Array.isArray(map)
     ? map.map(function (key) { return ({ key: key, val: key }); })
@@ -54,7 +59,7 @@ function normalizeMap(map: Array<string> | Object) {
 }
 
 function getModuleByNamespace(store: Store<any>, helper: string, namespace: string) {
-  var module = store._modulesNamespaceMap[namespace];
+  var module = store["_modulesNamespaceMap"][namespace];
   if (process.env.NODE_ENV !== 'production' && !module) {
     console.error(("[vuex] module namespace not found in " + helper + "(): " + namespace));
   }
@@ -62,9 +67,9 @@ function getModuleByNamespace(store: Store<any>, helper: string, namespace: stri
 }
 
 
-export const GetterSetter = createBindingHelper('computed', function (namespace: string, getters: Array<string> | Object) {
-  var res: { [key: string]: any } = {};
-  normalizeMap(getters).forEach(function (ref) {
+export const GetterSetter = createBindingHelper('computed', function (namespace: any, map: any): any {
+  var res = {};
+  normalizeMap(map).forEach(function (ref) {
     var key = ref.key;
     var val = ref.val;
 
