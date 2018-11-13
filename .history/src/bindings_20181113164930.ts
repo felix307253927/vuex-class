@@ -66,34 +66,31 @@ export const GetterSetter = createBindingHelper('computed', function (namespace:
     var val = ref.val;
 
     val = namespace + val;
-    res[key] = {
-      get: function () {
-        if (namespace && !getModuleByNamespace(this.$store, 'mapGetter', namespace)) {
-          return
-        }
-        if (process.env.NODE_ENV !== 'production' && !(val in this.$store.getters)) {
-          console.error(("[vuex] unknown getter: " + val));
-          return
-        }
-        return this.$store.getters[val]
-      },
-      set: function (...args: any) {
-        var dispatch = this.$store.dispatch;
-        if (namespace) {
-          var module = getModuleByNamespace(this.$store, 'mapAction', namespace);
-          if (!module) {
-            return
-          }
-          dispatch = module.context.dispatch;
-        }
-        return typeof val === 'function'
-          ? val.apply(this, [dispatch].concat(args))
-          : dispatch.apply(this.$store, [val].concat(args))
+    res[key] = function mappedGetter() {
+      if (namespace && !getModuleByNamespace(this.$store, 'mapGetters', namespace)) {
+        return
       }
-    }
+      if (process.env.NODE_ENV !== 'production' && !(val in this.$store.getters)) {
+        console.error(("[vuex] unknown getter: " + val));
+        return
+      }
+      return this.$store.getters[val]
+    };
+    // mark vuex getter for devtools
+    res[key].vuex = true;
   });
   return res
 })
+function setter(setKey: string) {
+  return function (target: Vue, key: string) {
+    let store = target.$store
+    Reflect.defineProperty(target, key, {
+      set(v: any) {
+        store.dispatch(setKey, v)
+      }
+    })
+  }
+}
 
 export function namespace(namespace: string): BindingHelpers
 export function namespace<T extends BindingHelper>(
@@ -133,7 +130,9 @@ export function namespace<T extends BindingHelper>(
     Getter: createNamespacedHelper(Getter as any),
     Mutation: createNamespacedHelper(Mutation as any),
     Action: createNamespacedHelper(Action as any),
-    GetterSetter: createNamespacedHelper(GetterSetter as any)
+    GetterSetter: function (setKey: string) {
+      return GetterSetter(`${namespace}/${setKey}`)
+    }
   }
 }
 

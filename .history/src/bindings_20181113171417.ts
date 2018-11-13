@@ -94,6 +94,16 @@ export const GetterSetter = createBindingHelper('computed', function (namespace:
   });
   return res
 })
+function setter(setKey: string) {
+  return function (target: Vue, key: string) {
+    let store = target.$store
+    Reflect.defineProperty(target, key, {
+      set(v: any) {
+        store.dispatch(setKey, v)
+      }
+    })
+  }
+}
 
 export function namespace(namespace: string): BindingHelpers
 export function namespace<T extends BindingHelper>(
@@ -133,7 +143,9 @@ export function namespace<T extends BindingHelper>(
     Getter: createNamespacedHelper(Getter as any),
     Mutation: createNamespacedHelper(Mutation as any),
     Action: createNamespacedHelper(Action as any),
-    GetterSetter: createNamespacedHelper(GetterSetter as any)
+    GetterSetter: function (setKey: string) {
+      return GetterSetter(`${namespace}/${setKey}`)
+    }
   }
 }
 

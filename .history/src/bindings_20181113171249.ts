@@ -77,23 +77,36 @@ export const GetterSetter = createBindingHelper('computed', function (namespace:
         }
         return this.$store.getters[val]
       },
-      set: function (...args: any) {
-        var dispatch = this.$store.dispatch;
-        if (namespace) {
-          var module = getModuleByNamespace(this.$store, 'mapAction', namespace);
-          if (!module) {
-            return
-          }
-          dispatch = module.context.dispatch;
+      set: function(value: any){
+        var args = [], len = arguments.length;
+      while ( len-- ) args[ len ] = arguments[ len ];
+
+      var dispatch = this.$store.dispatch;
+      if (namespace) {
+        var module = getModuleByNamespace(this.$store, 'mapActions', namespace);
+        if (!module) {
+          return
         }
-        return typeof val === 'function'
-          ? val.apply(this, [dispatch].concat(args))
-          : dispatch.apply(this.$store, [val].concat(args))
+        dispatch = module.context.dispatch;
+      }
+      return typeof val === 'function'
+        ? val.apply(this, [dispatch].concat(args))
+        : dispatch.apply(this.$store, [val].concat(args))
       }
     }
   });
   return res
 })
+function setter(setKey: string) {
+  return function (target: Vue, key: string) {
+    let store = target.$store
+    Reflect.defineProperty(target, key, {
+      set(v: any) {
+        store.dispatch(setKey, v)
+      }
+    })
+  }
+}
 
 export function namespace(namespace: string): BindingHelpers
 export function namespace<T extends BindingHelper>(
@@ -133,7 +146,9 @@ export function namespace<T extends BindingHelper>(
     Getter: createNamespacedHelper(Getter as any),
     Mutation: createNamespacedHelper(Mutation as any),
     Action: createNamespacedHelper(Action as any),
-    GetterSetter: createNamespacedHelper(GetterSetter as any)
+    GetterSetter: function (setKey: string) {
+      return GetterSetter(`${namespace}/${setKey}`)
+    }
   }
 }
 

@@ -59,41 +59,36 @@ function getModuleByNamespace(store: Store<any>, helper: string, namespace: stri
 }
 
 
-export const GetterSetter = createBindingHelper('computed', function (namespace: string, getters: Array<string> | Object) {
-  var res: { [key: string]: any } = {};
-  normalizeMap(getters).forEach(function (ref) {
-    var key = ref.key;
-    var val = ref.val;
+export const GetterSetter = createBindingHelper('computed', function (namespace: string, gs: any) {
+  var res = {};
+  res[key] = function mappedAction<Vue>() {
+    var args = [], len = arguments.length;
+    while (len--) args[len] = arguments[len];
 
-    val = namespace + val;
-    res[key] = {
-      get: function () {
-        if (namespace && !getModuleByNamespace(this.$store, 'mapGetter', namespace)) {
-          return
-        }
-        if (process.env.NODE_ENV !== 'production' && !(val in this.$store.getters)) {
-          console.error(("[vuex] unknown getter: " + val));
-          return
-        }
-        return this.$store.getters[val]
-      },
-      set: function (...args: any) {
-        var dispatch = this.$store.dispatch;
-        if (namespace) {
-          var module = getModuleByNamespace(this.$store, 'mapAction', namespace);
-          if (!module) {
-            return
-          }
-          dispatch = module.context.dispatch;
-        }
-        return typeof val === 'function'
-          ? val.apply(this, [dispatch].concat(args))
-          : dispatch.apply(this.$store, [val].concat(args))
+    var dispatch = this.$store.dispatch;
+    if (namespace) {
+      var module = getModuleByNamespace(this.$store, 'mapActions', namespace);
+      if (!module) {
+        return
       }
+      dispatch = module.context.dispatch;
     }
-  });
+    return typeof val === 'function'
+      ? val.apply(this, [dispatch].concat(args))
+      : dispatch.apply(this.$store, [val].concat(args))
+  };
   return res
 })
+function setter(setKey: string) {
+  return function (target: Vue, key: string) {
+    let store = target.$store
+    Reflect.defineProperty(target, key, {
+      set(v: any) {
+        store.dispatch(setKey, v)
+      }
+    })
+  }
+}
 
 export function namespace(namespace: string): BindingHelpers
 export function namespace<T extends BindingHelper>(
@@ -133,7 +128,9 @@ export function namespace<T extends BindingHelper>(
     Getter: createNamespacedHelper(Getter as any),
     Mutation: createNamespacedHelper(Mutation as any),
     Action: createNamespacedHelper(Action as any),
-    GetterSetter: createNamespacedHelper(GetterSetter as any)
+    GetterSetter: function (setKey: string) {
+      return GetterSetter(`${namespace}/${setKey}`)
+    }
   }
 }
 
