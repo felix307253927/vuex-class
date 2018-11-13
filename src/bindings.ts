@@ -6,10 +6,6 @@ import {
   mapActions,
   mapMutations,
   Store,
-  Mapper,
-  Computed,
-  MapperWithNamespace,
-  Dictionary
 } from 'vuex'
 
 export const Component = VComponent
@@ -22,7 +18,13 @@ export type MapHelper = typeof mapState | typeof mapGetters
   | typeof mapActions | typeof mapMutations | any
 
 export interface BindingOptions {
-  namespace?: string
+  namespace?: string,
+  setKey?: string
+}
+
+interface MyObject extends Object {
+  [key: string]: any
+  [key: number]: any
 }
 
 export interface BindingHelper {
@@ -34,12 +36,16 @@ export interface StateBindingHelper extends BindingHelper {
   (type: StateTransformer, options?: BindingOptions): VuexDecorator
 }
 
+export interface SetterBindingHelper extends BindingHelper {
+  (type: string, options?: BindingOptions | string): VuexDecorator
+}
+
 export interface BindingHelpers {
   State: StateBindingHelper
   Getter: BindingHelper
   Mutation: BindingHelper
   Action: BindingHelper,
-  GetterSetter: BindingHelper
+  GetterSetter: SetterBindingHelper
 }
 
 
@@ -51,14 +57,26 @@ export const Action = createBindingHelper('methods', mapActions)
 
 export const Mutation = createBindingHelper('methods', mapMutations)
 
+function normalizeNamespace(fn: Function) {
+  return function (namespace: string | MyObject, map: string | MyObject, setKey: string) {
+    if (typeof namespace !== 'string') {
+      setKey = <string>map
+      map = namespace;
+      namespace = '';
+    } else if (namespace.charAt(namespace.length - 1) !== '/') {
+      namespace += '/';
+    }
+    return fn(namespace, map, setKey)
+  }
+}
 
-function normalizeMap(map: Array<string> | Object) {
+function normalizeMap(map: Array<string> | MyObject) {
   return Array.isArray(map)
     ? map.map(function (key) { return ({ key: key, val: key }); })
     : Object.keys(map).map(function (key) { return ({ key: key, val: map[key] }); })
 }
 
-function getModuleByNamespace(store: Store<any>, helper: string, namespace: string) {
+function getModuleByNamespace(store: MyObject, helper: string, namespace: string) {
   var module = store["_modulesNamespaceMap"][namespace];
   if (process.env.NODE_ENV !== 'production' && !module) {
     console.error(("[vuex] module namespace not found in " + helper + "(): " + namespace));
@@ -67,23 +85,23 @@ function getModuleByNamespace(store: Store<any>, helper: string, namespace: stri
 }
 
 
-export const GetterSetter = createBindingHelper('computed', function (namespace: any, map: any): any {
-  var res = {};
+export const GetterSetter = createBindingHelper('computed', normalizeNamespace(function (namespace: any, map: any, setKey: string): any {
+  var res: MyObject = {};
   normalizeMap(map).forEach(function (ref) {
     var key = ref.key;
     var val = ref.val;
-
-    val = namespace + val;
+    setKey = setKey || val
     res[key] = {
       get: function () {
+        const _key = namespace + val;
         if (namespace && !getModuleByNamespace(this.$store, 'mapGetter', namespace)) {
           return
         }
-        if (process.env.NODE_ENV !== 'production' && !(val in this.$store.getters)) {
-          console.error(("[vuex] unknown getter: " + val));
+        if (process.env.NODE_ENV !== 'production' && !(_key in this.$store.getters)) {
+          console.error(("[vuex] unknown getter: " + _key));
           return
         }
-        return this.$store.getters[val]
+        return this.$store.getters[_key]
       },
       set: function (...args: any) {
         var dispatch = this.$store.dispatch;
@@ -94,14 +112,12 @@ export const GetterSetter = createBindingHelper('computed', function (namespace:
           }
           dispatch = module.context.dispatch;
         }
-        return typeof val === 'function'
-          ? val.apply(this, [dispatch].concat(args))
-          : dispatch.apply(this.$store, [val].concat(args))
+        return dispatch.apply(this.$store, [setKey].concat(args))
       }
     }
   });
   return res
-})
+})) as SetterBindingHelper
 
 export function namespace(namespace: string): BindingHelpers
 export function namespace<T extends BindingHelper>(
@@ -115,16 +131,15 @@ export function namespace<T extends BindingHelper>(
   function createNamespacedHelper(helper: T): T {
     // T is BindingHelper or StateBindingHelper
     function namespacedHelper(proto: Vue, key: string): void
-    function namespacedHelper(type: any, options?: BindingOptions): VuexDecorator
+    function namespacedHelper(type: any, options?: BindingOptions | string): VuexDecorator
     function namespacedHelper(a: Vue | any, b?: string | BindingOptions): VuexDecorator | void {
-      if (typeof b === 'string') {
-        const key: string = b
+      if (a instanceof Vue) {
+        const key: string = <string>b
         const proto: Vue = a
-        return helper(key, { namespace })(proto, key)
+        return helper(key, { namespace, setKey: key })(proto, key)
       }
-
       const type = a
-      const options = merge(b || {}, { namespace })
+      const options = merge(b || {}, { namespace, setKey: <string>b })
       return helper(type, options)
     }
 
@@ -149,7 +164,7 @@ function createBindingHelper(
   bindTo: 'computed' | 'methods',
   mapFn: MapHelper
 ): BindingHelper {
-  function makeDecorator(map: any, namespace: string | undefined) {
+  function makeDecorator(map: any, namespace: string | undefined, setKey?: string) {
     return createDecorator((componentOptions, key) => {
       if (!componentOptions[bindTo]) {
         componentOptions[bindTo] = {}
@@ -158,29 +173,39 @@ function createBindingHelper(
       const mapObject = { [key]: map }
 
       componentOptions[bindTo]![key] = namespace !== undefined
-        ? mapFn(namespace, mapObject)[key]
-        : mapFn(mapObject)[key]
+        ? mapFn(namespace, mapObject, setKey)[key]
+        : mapFn(mapObject, setKey)[key]
     })
   }
 
   function helper(proto: Vue, key: string): void
-  function helper(type: any, options?: BindingOptions): VuexDecorator
+  function helper(type: any, options?: BindingOptions | string): VuexDecorator
   function helper(a: Vue | any, b?: string | BindingOptions): VuexDecorator | void {
-    if (typeof b === 'string') {
-      const key: string = b
+    if (a instanceof Vue) {
+      const key: string = <string>b
       const proto: Vue = a
-      return makeDecorator(key, undefined)(proto, key)
+      return makeDecorator(key, key)(proto, key)
     }
-
     const namespace = extractNamespace(b)
     const type = a
-    return makeDecorator(type, namespace)
+    let setKey
+    if (!b) {
+      setKey = a
+    } else if (typeof b === 'string') {
+      setKey = b
+    } else {
+      setKey = b.setKey || a
+    }
+    return makeDecorator(type, namespace, setKey)
   }
 
   return helper
 }
 
-function extractNamespace(options: BindingOptions | undefined): string | undefined {
+function extractNamespace(options: BindingOptions | string | undefined): string | undefined {
+  if (!options || typeof options === 'string') {
+    return undefined
+  }
   const n = options && options.namespace
 
   if (typeof n !== 'string') {
