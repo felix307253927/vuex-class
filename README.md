@@ -11,12 +11,12 @@ Binding helpers for Vuex and vue-class-component
 ## Installation
 
 ```bash
-$ npm i -S felix307253927/vuex-class
+$ npm i -S vuex-class-decorator
 ```
 
 ## Example
 
-```ts
+```js
 import Vue from 'vue'
 import {
   State,
