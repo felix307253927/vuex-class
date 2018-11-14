@@ -11,7 +11,7 @@ Binding helpers for Vuex and vue-class-component
 ## Installation
 
 ```bash
-$ npm install --save vuex-class-decorator
+$ npm i -S felix307253927/vuex-class
 ```
 
 ## Example
