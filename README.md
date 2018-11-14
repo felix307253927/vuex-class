@@ -1,5 +1,5 @@
-# vuex-class
-
+# vuex-class-decorator
+Via [vuex-class](https://github.com/ktsn/vuex-class)
 Binding helpers for Vuex and vue-class-component
 
 ## Dependencies
@@ -11,9 +11,7 @@ Binding helpers for Vuex and vue-class-component
 ## Installation
 
 ```bash
-$ npm install --save vuex-class
-# or
-$ yarn add vuex-class
+$ npm install --save vuex-class-decorator
 ```
 
 ## Example
@@ -26,6 +24,8 @@ import {
   Getter,
   Action,
   Mutation,
+  GetterSetter,
+  Component,
   namespace
 } from 'vuex-class'
 
@@ -39,6 +39,7 @@ export class MyComp extends Vue {
   @Action('foo') actionFoo
   @Mutation('foo') mutationFoo
   @someModule.Getter('foo') moduleGetterFoo
+  @GetterSetter('getterKey','setterKey') gsFoo:string     //getterKey ---> getters , setterKey --> actions
 
   // If the argument is omitted, use the property name
   // for each state/getter/action/mutation type
@@ -46,6 +47,8 @@ export class MyComp extends Vue {
   @Getter bar
   @Action baz
   @Mutation qux
+  @GetterSetter bar:number
+  @someModule.GetterSetter name:stringg
 
   created () {
     this.stateFoo // -> store.state.foo
@@ -54,6 +57,11 @@ export class MyComp extends Vue {
     this.actionFoo({ value: true }) // -> store.dispatch('foo', { value: true })
     this.mutationFoo({ value: true }) // -> store.commit('foo', { value: true })
     this.moduleGetterFoo // -> store.getters['path/to/module/foo']
+    this.bar  // -> store.getters.bar
+    this.bar = 1      // -> store.dispatch('bar', 1)
+    this.foo = 'test' // -> store.dispatch('setterKey', 'test')
+    this.name         // -> store.getters['path/to/module/name']
+    this.name = 'myname' // -> store.dispatch('path/to/module/name', 'myname')
   }
 }
 ```

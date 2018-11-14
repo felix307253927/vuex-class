@@ -1,6 +1,6 @@
 {
-  "name": "vuex-class",
-  "version": "0.3.1",
+  "name": "vuex-class-decorator",
+  "version": "1.0.0",
   "author": "katashin",
   "description": "Binding helpers for Vuex and vue-class-component",
   "keywords": [
@@ -19,7 +19,7 @@
   "bugs": "https://github.com/ktsn/vuex-class/issues",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ktsn/vuex-class.git"
+    "url": "https://github.com/felix307253927/vuex-class.git"
   },
   "scripts": {
     "prepublishOnly": "run-s lint test clean build",
