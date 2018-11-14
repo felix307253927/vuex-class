@@ -1,6 +1,6 @@
 {
   "name": "vuex-class-decorator",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "author": "felix",
   "description": "Binding helpers for Vuex and vue-class-component",
   "keywords": [
@@ -13,7 +13,9 @@
   "module": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
-    "src"
+    "src",
+    "lib",
+    "dist"
   ],
   "homepage": "https://github.com/felix307253927/vuex-class",
   "bugs": "https://github.com/felix307253927/vuex-class/issues",
