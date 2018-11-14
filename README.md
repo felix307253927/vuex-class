@@ -16,9 +16,8 @@ $ npm i -S felix307253927/vuex-class
 
 ## Example
 
-```js
+```ts
 import Vue from 'vue'
-import Component from 'vue-class-component'
 import {
   State,
   Getter,
