@@ -9,9 +9,8 @@
     "bindings"
   ],
   "license": "MIT",
-  "main": "src/index.ts",
-  "module": "src/index.ts",
-  "typings": "lib/index.d.ts",
+  "main": "lib/index.ts",
+  "module": "lib/index.ts",
   "files": [
     "src"
   ],
