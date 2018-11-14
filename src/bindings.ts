@@ -103,7 +103,7 @@ export const GetterSetter = createBindingHelper('computed', normalizeNamespace(f
         }
         return this.$store.getters[_key]
       },
-      set: function (...args: any) {
+      set: function (...args: any[]) {
         var dispatch = this.$store.dispatch;
         if (namespace) {
           var module = getModuleByNamespace(this.$store, 'mapAction', namespace);
