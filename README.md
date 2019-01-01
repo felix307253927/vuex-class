@@ -38,7 +38,7 @@ export class MyComp extends Vue {
   @Action('foo') actionFoo
   @Mutation('foo') mutationFoo
   @someModule.Getter('foo') moduleGetterFoo
-  @GetterSetter('getterKey','setterKey') gsFoo:string     //getterKey ---> getters , setterKey --> actions
+  @GetterSetter('getterKey','setterKey') gsFoo     //getterKey ---> getters , setterKey --> actions
 
   // If the argument is omitted, use the property name
   // for each state/getter/action/mutation type
@@ -46,8 +46,8 @@ export class MyComp extends Vue {
   @Getter bar
   @Action baz
   @Mutation qux
-  @GetterSetter bar:number
-  @someModule.GetterSetter name:stringg
+  @GetterSetter gsBar
+  @someModule.GetterSetter name
 
   created () {
     this.stateFoo // -> store.state.foo
@@ -56,9 +56,9 @@ export class MyComp extends Vue {
     this.actionFoo({ value: true }) // -> store.dispatch('foo', { value: true })
     this.mutationFoo({ value: true }) // -> store.commit('foo', { value: true })
     this.moduleGetterFoo // -> store.getters['path/to/module/foo']
-    this.bar  // -> store.getters.bar
-    this.bar = 1      // -> store.dispatch('bar', 1)
-    this.foo = 'test' // -> store.dispatch('setterKey', 'test')
+    this.gsBar  // -> store.getters.gsBar
+    this.gsBar = 1      // -> store.dispatch('gsBar', 1)
+    this.gsFoo = 'test' // -> store.dispatch('setterKey', 'test')
     this.name         // -> store.getters['path/to/module/name']
     this.name = 'myname' // -> store.dispatch('path/to/module/name', 'myname')
   }

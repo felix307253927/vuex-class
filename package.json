@@ -1,6 +1,6 @@
 {
   "name": "vuex-class-decorator",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "author": "felix",
   "description": "Binding helpers for Vuex and vue-class-component",
   "keywords": [

@@ -5,3 +5,4 @@ typings/
 /dist/
 /.tmp/
 .history
+.vscode

@@ -184,7 +184,7 @@ function createBindingHelper(
     if (a instanceof Vue) {
       const key: string = <string>b
       const proto: Vue = a
-      return makeDecorator(key, key)(proto, key)
+      return makeDecorator(key, undefined, key)(proto, key)
     }
     const namespace = extractNamespace(b)
     const type = a
