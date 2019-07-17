@@ -26,7 +26,7 @@ import {
   GetterSetter,
   Component,
   namespace
-} from 'vuex-class'
+} from 'vuex-class-decorator'
 
 const someModule = namespace('path/to/module')
 
